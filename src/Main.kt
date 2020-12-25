@@ -43,7 +43,7 @@ class Main {
         openSet.add(startingPos)
         while (!openSet.isEmpty() && startingPos != goalPos) {
             val q = openSet.poll()
-            val neighbours = getSurroundingNodes(q, goalPos, input)
+            val neighbours = getSurroundingNodes(q, goalPos, copy)
             for(np in neighbours) {
                 println("" + np.position + " - " + np.f)
             }
@@ -55,7 +55,7 @@ class Main {
         return sum
     }
 
-    private fun getSurroundingNodes(centre: NavigationPoint, goal: NavigationPoint, input: Array<CharArray>): List<NavigationPoint> {
+    private fun getSurroundingNodes(centre: NavigationPoint, goal: NavigationPoint, input: Array<CharArray?>): List<NavigationPoint> {
         val toReturn = ArrayList<NavigationPoint>()
         for(p in surrounding) {
             val point = Point(add(centre.position, p))
@@ -68,10 +68,10 @@ class Main {
         return toReturn
     }
 
-    private fun isValid(check: Point, input: Array<CharArray>): Boolean {
+    private fun isValid(check: Point, input: Array<CharArray?>): Boolean {
         return check.x >= 0 && check.x < input.size
                 && check.y >= 0 && check.y < input.size
-                && input[check.y][check.x] != 'X' // TODO: funker ikke
+                && input[check.y]!![check.x] != 'X' // TODO: funker ikke
     }
 
     private fun diagonalDistance(current: Point, goal: Point): Int {
