@@ -1,5 +1,8 @@
 import java.awt.Point
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.math.abs
+import kotlin.math.max
 
 class Main {
     /*
@@ -14,7 +17,6 @@ class Main {
     This is often referred to as the heuristic, which is nothing but a kind of smart guess.
     We really don’t know the actual distance until we find the path, because all sorts of things can be in the
     way (walls, water, etc.).
-    There can be many ways to calculate this ‘h’ which are discussed in the later sections.
      */
     private fun A_Star(input: Array<CharArray>) {
         val copy = arrayOfNulls<CharArray>(input.size)
@@ -22,8 +24,13 @@ class Main {
             copy[i] = input[i].clone()
         }
         val len = input.size
-        val startingPos = NavigationPoint(2, 2)
+        val startingPos = NavigationPoint(6, 6)
+        startingPos.setG(0);
         val goalPos = NavigationPoint(len - 3, 2)
+
+        val closedSet = HashSet<NavigationPoint>()
+        val openSet = PriorityQueue(NavigationPointComparator())
+
         if (len > 3) {
             copy[startingPos.position.y]!![startingPos.position.x] = 'C'
             copy[goalPos.position.y]!![goalPos.position.x] = 'o'
@@ -33,15 +40,78 @@ class Main {
             }
         }
         display(copy)
-        val closedSet = HashSet<NavigationPoint>()
-        val openSet = PriorityQueue(NavigationPointComparator()) // TODO: override Comparator
         openSet.add(startingPos)
         while (!openSet.isEmpty() && startingPos != goalPos) {
             val q = openSet.poll()
+            val neighbours = getSurroundingNodes(q, goalPos, input)
+            for(np in neighbours) {
+                println("" + np.position + " - " + np.f)
+            }
         }
     }
 
-    private fun getSurroundingNodes(centre: NavigationPoint, input: Array<CharArray>): Array<NavigationPoint> {}
+    private fun add(p1: Point, p2: Point): Point {
+        val sum = Point(p1.x + p2.x, p1.y + p2.y)
+        return sum
+    }
+
+    private fun getSurroundingNodes(centre: NavigationPoint, goal: NavigationPoint, input: Array<CharArray>): List<NavigationPoint> {
+        val toReturn = ArrayList<NavigationPoint>()
+        for(p in surrounding) {
+            val point = Point(add(centre.position, p))
+            if(isValid(point, input)) {
+                val toAdd = NavigationPoint(centre, point)
+                toAdd.setH(diagonalDistance(toAdd.position, goal.position))
+                toReturn.add(toAdd)
+            }
+        }
+        return toReturn
+    }
+
+    private fun isValid(check: Point, input: Array<CharArray>): Boolean {
+        return check.x >= 0 && check.x < input.size
+                && check.y >= 0 && check.y < input.size
+                && input[check.y][check.x] != 'X' // TODO: funker ikke
+    }
+
+    private fun diagonalDistance(current: Point, goal: Point): Int {
+        return max(abs(current.x - goal.x),
+                abs(current.y - goal.y))
+    }
+
+    private fun direction(origin: Point, lookingAt: Point): Direction? {
+        var direction: Direction? = null
+        if(origin.equals(lookingAt)) {
+            return direction
+        }
+        if(origin.y > lookingAt.y) { // Top
+            if(origin.x > lookingAt.x) {
+                direction = Direction.NORTHWEST
+            } else if(origin.x == lookingAt.x) {
+                direction =  Direction.NORTH
+            } else {
+                direction =  Direction.NORTHEAST
+            }
+        } else if(origin.y == lookingAt.y) { // Middle
+            if(origin.x > lookingAt.x) {
+                direction = Direction.WEST
+            } else {
+                direction = Direction.EAST
+            }
+        } else { // Bottom
+            if(origin.x > lookingAt.x) {
+                direction = Direction.SOUTHWEST
+            } else if(origin.x == lookingAt.x) {
+                direction = Direction.SOUTH
+            } else {
+                direction = Direction.SOUTHEAST
+            }
+        }
+
+
+        return direction
+    }
+
     fun display(grid: Array<CharArray?>) {
         for (ca in grid) {
             val builder = StringBuilder()
@@ -52,41 +122,6 @@ class Main {
         }
     }
 
-    internal inner class NavigationPoint(private val parent: NavigationPoint?, x: Int, y: Int) {
-        val position: Point
-        var f: Double
-            private set
-        private var g: Double
-        private var h: Double
-
-        constructor(x: Int, y: Int) : this(null, x, y) {}
-
-        fun setG(g: Double) {
-            this.g = g
-            f = g + h
-        }
-
-        fun setH(h: Double) {
-            this.h = h
-            f = g + h
-        }
-
-        fun getG(): Double {
-            return g
-        }
-
-        fun getH(): Double {
-            return h
-        }
-
-        init {
-            position = Point(x, y)
-            f = 0.0
-            g = 0.0
-            h = 0.0
-        }
-    }
-
     internal inner class NavigationPointComparator : Comparator<NavigationPoint> {
         override fun compare(o1: NavigationPoint, o2: NavigationPoint): Int {
             return if (o1.f - o2.f < 0) -1 else if (o1.f == o2.f) 0 else 1
@@ -94,8 +129,19 @@ class Main {
     }
 
     companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
+        // 3x3 area to check the surrounding area of a NavigationPoint
+        @JvmStatic val surrounding: Array<Point> = arrayOf(
+                Point(-1, -1), // Top
+                Point(0, -1),
+                Point(1, -1),
+                Point(-1, 0), // Middle
+                Point(1, 0),
+                Point(-1, 1), // Bottom
+                Point(0, 1),
+                Point(1, 1)
+        )
+
+        @JvmStatic fun main(args: Array<String>) {
             Main()
         }
     }
