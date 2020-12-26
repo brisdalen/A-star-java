@@ -24,29 +24,47 @@ class Main {
             copy[i] = input[i].clone()
         }
         val len = input.size
-        val startingPos = NavigationPoint(6, 6)
-        startingPos.setG(0);
+        val startingPos = NavigationPoint(2, 2)
         val goalPos = NavigationPoint(len - 3, 2)
+//        startingPos.setG(0)
+//        startingPos.setH(diagonalDistance(startingPos, goalPos))
+        startingPos.f = 0
 
-        val closedSet = HashSet<NavigationPoint>()
-        val openSet = PriorityQueue(NavigationPointComparator())
+        val openSet = PriorityQueue(NavigationPointComparator()) // 1 Initialize the open list
+        val closedSet = HashSet<NavigationPoint>() // 2 Initialize the closed list
 
         if (len > 3) {
-            copy[startingPos.position.y]!![startingPos.position.x] = 'C'
             copy[goalPos.position.y]!![goalPos.position.x] = 'o'
             for (i in 0 until len / 2 + 4) {
                 copy[i]!![len / 2 - 1] = 'X'
                 copy[i]!![len / 2] = 'X'
             }
         }
-        display(copy)
-        openSet.add(startingPos)
-        while (!openSet.isEmpty() && startingPos != goalPos) {
-            val q = openSet.poll()
-            val neighbours = getSurroundingNodes(q, goalPos, copy)
-            for(np in neighbours) {
-                println("" + np.position + " - " + np.f)
+        openSet.add(startingPos) // put the starting node on the open list
+        while (!openSet.isEmpty()) { // 3.  while the open list is not empty
+            val q = openSet.poll() // a) find the node with the least f on the open list, call it "q". b) pop q off the open list
+            println(q)
+            copy[q.position.y]!![q.position.x] = 'C'
+            display(copy)
+            if(q == goalPos) {
+                println("path to goal found: $q")
+                return
             }
+
+            val neighbours = getSurroundingNodes(q, goalPos, copy) // c) generate q's 8 successors and set their parents to q
+            for(np in neighbours) { // d) for each successor
+                if(np == goalPos) { // i) if successor is the goal, stop search
+                    println("path to goal found: $np")
+                    return
+                }
+//                println("" + np.position + " - " + np.f)
+                if(!openSet.contains(np)) {
+                    openSet.add(np)
+                }
+            }
+
+            closedSet.add(q) // e) push q on the closed list
+            copy[q.position.y]!![q.position.x] = 'ø'
         }
     }
 
@@ -61,7 +79,8 @@ class Main {
             val point = Point(add(centre.position, p))
             if(isValid(point, input)) {
                 val toAdd = NavigationPoint(centre, point)
-                toAdd.setH(diagonalDistance(toAdd.position, goal.position))
+//                toAdd.setH(manhattenDistance(toAdd, goal)) // successor.h = distance from goal to successor
+                toAdd.setH(diagonalDistance(toAdd, goal)) // successor.h = distance from goal to successor
                 toReturn.add(toAdd)
             }
         }
@@ -74,9 +93,23 @@ class Main {
                 && input[check.y]!![check.x] != 'X' // TODO: funker ikke
     }
 
+    private fun diagonalDistance(current: NavigationPoint, goal: NavigationPoint): Int {
+        return max(abs(current.position.x - goal.position.x),
+                abs(current.position.y - goal.position.y))
+    }
+
     private fun diagonalDistance(current: Point, goal: Point): Int {
         return max(abs(current.x - goal.x),
                 abs(current.y - goal.y))
+    }
+
+    /*
+     h = abs (current_cell.x – goal.x) +
+     abs (current_cell.y – goal.y)
+     */
+    private fun manhattenDistance(current: NavigationPoint, goal: NavigationPoint): Int {
+        return abs(current.position.x - goal.position.x) +
+                abs(current.position.y - goal.position.y)
     }
 
     private fun direction(origin: Point, lookingAt: Point): Direction? {

@@ -3,7 +3,6 @@ import java.awt.Point
 class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int) {
     val position: Point = Point(x, y)
     var f: Int
-        private set
 
     private var g: Int
     private var h: Int
@@ -13,7 +12,7 @@ class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int) {
     constructor(point: Point) : this(null, point.x, point.y)
 
     constructor(parent: NavigationPoint, point: Point) : this(parent, point.x, point.y) {
-        g = parent.getG() + 1
+        g = parent.g + 1 // successor.g = q.g + distance between successor and q; distance always 1
     }
 
     fun setG(g: Int) {
@@ -23,7 +22,7 @@ class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int) {
 
     fun setH(h: Int) {
         this.h = h
-        f = g + h
+        f = g + h // successor.f = successor.g + successor.h
     }
 
     fun getG(): Int {
@@ -38,5 +37,19 @@ class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int) {
         f = 0
         g = 0
         h = 0
+    }
+
+    override fun toString(): String {
+        return "$position f:$f - g:$g h:$h"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if(!(other is NavigationPoint)) {
+            return false
+        }
+        if((other as NavigationPoint).position.equals(position)) {
+            return true
+        }
+        return false
     }
 }
