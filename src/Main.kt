@@ -34,11 +34,12 @@ class Main {
         val closedSet = HashSet<NavigationPoint>() // 2 Initialize the closed list
 
         if (len > 3) {
-            copy[goalPos.position.y]!![goalPos.position.x] = 'o'
-            for (i in 0 until len / 2 + 4) {
-                copy[i]!![len / 2 - 1] = 'X'
-                copy[i]!![len / 2] = 'X'
-            }
+//            copy[goalPos.position.y]!![goalPos.position.x] = 'o'
+//            for (i in 0 until len / 2 + 4) {
+//                copy[i]!![len / 2 - 1] = 'X'
+//                copy[i]!![len / 2] = 'X'
+//            }
+
         }
         openSet.add(startingPos) // put the starting node on the open list
         while (!openSet.isEmpty()) { // 3.  while the open list is not empty
@@ -91,8 +92,8 @@ class Main {
             val point = Point(add(centre.position, p))
             if(isValid(point, input)) {
                 val toAdd = NavigationPoint(centre, point)
-//                toAdd.setH(manhattenDistance(toAdd, goal)) // successor.h = distance from goal to successor
-                toAdd.setH(diagonalDistance(toAdd, goal)) // successor.h = distance from goal to successor
+                toAdd.setH(manhattenDistance(toAdd, goal)) // successor.h = distance from goal to successor
+//                toAdd.setH(diagonalDistance(toAdd, goal)) // successor.h = distance from goal to successor
                 toReturn.add(toAdd)
             }
         }
