@@ -1,6 +1,7 @@
 import java.awt.Point
 
 class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int) {
+    val parent = parent
     val position: Point = Point(x, y)
     var f: Int
 

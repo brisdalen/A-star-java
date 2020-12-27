@@ -18,7 +18,7 @@ class Main {
     We really don’t know the actual distance until we find the path, because all sorts of things can be in the
     way (walls, water, etc.).
      */
-    private fun A_Star(input: Array<CharArray>) {
+    private fun A_Star(input: Array<CharArray>): NavigationPoint? {
         val copy = arrayOfNulls<CharArray>(input.size)
         for (i in input.indices) {
             copy[i] = input[i].clone()
@@ -48,14 +48,14 @@ class Main {
             display(copy)
             if(q == goalPos) {
                 println("path to goal found: $q")
-                return
+                return q
             }
 
             val neighbours = getSurroundingNodes(q, goalPos, copy) // c) generate q's 8 successors and set their parents to q
             for(np in neighbours) { // d) for each successor
                 if(np == goalPos) { // i) if successor is the goal, stop search
                     println("path to goal found: $np")
-                    return
+                    return np
                 }
 //                println("" + np.position + " - " + np.f)
                 if(!openSet.contains(np)) {
@@ -66,6 +66,8 @@ class Main {
             closedSet.add(q) // e) push q on the closed list
             copy[q.position.y]!![q.position.x] = 'ø'
         }
+
+        return null
     }
 
     private fun add(p1: Point, p2: Point): Point {
@@ -145,6 +147,19 @@ class Main {
         return direction
     }
 
+    private fun pathFromNavigationPoint(point: NavigationPoint): ArrayList<NavigationPoint> {
+        return recursivePath(point, ArrayList())
+    }
+
+    private fun recursivePath(point: NavigationPoint, list: ArrayList<NavigationPoint>): ArrayList<NavigationPoint> {
+        list.add(point)
+        return if(point.parent == null) {
+            list
+        } else {
+            recursivePath(point.parent, list)
+        }
+    }
+
     fun display(grid: Array<CharArray?>) {
         for (ca in grid) {
             val builder = StringBuilder()
@@ -191,6 +206,12 @@ class Main {
             grid[0][i] = 'X'
             grid[grid.size - 1][i] = 'X'
         }
-        A_Star(grid)
+        val path = pathFromNavigationPoint(A_Star(grid)!!)
+        println("path size: ${path.size}")
+        path.reverse()
+        var step = 1
+        for(p in path) {
+            println("${step++}:[${p.position.x}:${p.position.y}]")
+        }
     }
 }
