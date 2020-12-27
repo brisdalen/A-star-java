@@ -41,7 +41,7 @@ class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int) {
     }
 
     override fun toString(): String {
-        return "$position f:$f - g:$g h:$h"
+        return "[${position.x}:${position.y}] f:$f - g:$g h:$h"
     }
 
     override fun equals(other: Any?): Boolean {

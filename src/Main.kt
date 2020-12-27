@@ -18,7 +18,7 @@ class Main {
     We really don’t know the actual distance until we find the path, because all sorts of things can be in the
     way (walls, water, etc.).
      */
-    private fun A_Star(input: Array<CharArray>): NavigationPoint? {
+    private fun A_Star(input: Array<CharArray>): ArrayList<NavigationPoint>? {
         val copy = arrayOfNulls<CharArray>(input.size)
         for (i in input.indices) {
             copy[i] = input[i].clone()
@@ -48,14 +48,24 @@ class Main {
             display(copy)
             if(q == goalPos) {
                 println("path to goal found: $q")
-                return q
+                val path = pathFromNavigationPoint(q)
+                for(point in path) {
+                    copy[point.position.y]!![point.position.x] = '0'
+                }
+                display(copy)
+                return path
             }
 
             val neighbours = getSurroundingNodes(q, goalPos, copy) // c) generate q's 8 successors and set their parents to q
             for(np in neighbours) { // d) for each successor
                 if(np == goalPos) { // i) if successor is the goal, stop search
                     println("path to goal found: $np")
-                    return np
+                    val path = pathFromNavigationPoint(np)
+                    for(point in path) {
+                        copy[point.position.y]!![point.position.x] = '0'
+                    }
+                    display(copy)
+                    return path
                 }
 //                println("" + np.position + " - " + np.f)
                 if(!openSet.contains(np)) {
@@ -206,12 +216,14 @@ class Main {
             grid[0][i] = 'X'
             grid[grid.size - 1][i] = 'X'
         }
-        val path = pathFromNavigationPoint(A_Star(grid)!!)
-        println("path size: ${path.size}")
-        path.reverse()
-        var step = 1
-        for(p in path) {
-            println("${step++}:[${p.position.x}:${p.position.y}]")
+        val path = A_Star(grid)
+        println("path size: ${path?.size}")
+        path?.reverse()
+        if (path != null) {
+            var step = 1
+            for(p in path) {
+                println("${step++}:[${p.position.x}:${p.position.y}]")
+            }
         }
     }
 }
