@@ -19,6 +19,7 @@ class Main {
     way (walls, water, etc.).
      */
     private fun A_Star(input: Array<CharArray>): ArrayList<NavigationPoint>? {
+        val startTime = System.currentTimeMillis()
         val copy = arrayOfNulls<CharArray>(input.size)
         for (i in input.indices) {
             copy[i] = input[i].clone()
@@ -34,11 +35,11 @@ class Main {
         val closedSet = HashSet<NavigationPoint>() // 2 Initialize the closed list
 
         if (len > 3) {
-//            copy[goalPos.position.y]!![goalPos.position.x] = 'o'
-//            for (i in 0 until len / 2 + 4) {
-//                copy[i]!![len / 2 - 1] = 'X'
-//                copy[i]!![len / 2] = 'X'
-//            }
+            copy[goalPos.position.y]!![goalPos.position.x] = 'o'
+            //for (i in 0 until len / 2 + 4) {
+            //    copy[i]!![len / 2 - 1] = 'X'
+            //    copy[i]!![len / 2] = 'X'
+            //}
 
         }
         openSet.add(startingPos) // put the starting node on the open list
@@ -48,25 +49,13 @@ class Main {
             copy[q.position.y]!![q.position.x] = 'C'
             display(copy)
             if(q == goalPos) {
-                println("path to goal found: $q")
-                val path = pathFromNavigationPoint(q)
-                for(point in path) {
-                    copy[point.position.y]!![point.position.x] = '0'
-                }
-                display(copy)
-                return path
+                return returnPath(q, copy, startTime)
             }
 
             val neighbours = getSurroundingNodes(q, goalPos, copy) // c) generate q's 8 successors and set their parents to q
             for(np in neighbours) { // d) for each successor
                 if(np == goalPos) { // i) if successor is the goal, stop search
-                    println("path to goal found: $np")
-                    val path = pathFromNavigationPoint(np)
-                    for(point in path) {
-                        copy[point.position.y]!![point.position.x] = '0'
-                    }
-                    display(copy)
-                    return path
+                    return returnPath(np, copy, startTime)
                 }
 //                println("" + np.position + " - " + np.f)
                 if(!openSet.contains(np)) {
@@ -79,6 +68,17 @@ class Main {
         }
 
         return null
+    }
+
+    private fun returnPath(np: NavigationPoint, copy: Array<CharArray?>, startTime: Long): ArrayList<NavigationPoint> {
+        println("path to goal found: $np")
+        val path = pathFromNavigationPoint(np)
+        for (point in path) {
+            copy[point.position.y]!![point.position.x] = '0'
+        }
+        display(copy)
+        println("Execution time: ${System.currentTimeMillis() - startTime}")
+        return path
     }
 
     private fun add(p1: Point, p2: Point): Point {
