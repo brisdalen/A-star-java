@@ -18,7 +18,7 @@ class Main {
     We really don’t know the actual distance until we find the path, because all sorts of things can be in the
     way (walls, water, etc.).
      */
-    private fun A_Star(input: Array<CharArray>): ArrayList<NavigationPoint>? {
+    private fun pathAStar(input: Array<CharArray>): ArrayList<NavigationPoint>? {
         val startTime = System.currentTimeMillis()
         val copy = arrayOfNulls<CharArray>(input.size)
         for (i in input.indices) {
@@ -84,8 +84,7 @@ class Main {
     }
 
     private fun add(p1: Point, p2: Point): Point {
-        val sum = Point(p1.x + p2.x, p1.y + p2.y)
-        return sum
+        return Point(p1.x + p2.x, p1.y + p2.y)
     }
 
     private fun getSurroundingNodes(centre: NavigationPoint, goal: NavigationPoint, input: Array<CharArray?>): List<NavigationPoint> {
@@ -105,7 +104,7 @@ class Main {
     private fun isValid(check: Point, input: Array<CharArray?>): Boolean {
         return check.x >= 0 && check.x < input.size
                 && check.y >= 0 && check.y < input.size
-                && input[check.y]!![check.x] != 'X' // TODO: funker ikke
+                && input[check.y]!![check.x] != 'X'
     }
 
     private fun diagonalDistance(current: NavigationPoint, goal: NavigationPoint): Int {
@@ -173,7 +172,7 @@ class Main {
         }
     }
 
-    fun display(grid: Array<CharArray?>) {
+    private fun display(grid: Array<CharArray?>) {
         for (ca in grid) {
             val builder = StringBuilder()
             for (c in ca!!) {
@@ -219,7 +218,7 @@ class Main {
             grid[0][i] = 'X'
             grid[grid.size - 1][i] = 'X'
         }
-        val path = A_Star(grid)
+        val path = pathAStar(grid)
         println("path size: ${path?.size}")
         path?.reverse()
         if (path != null) {
