@@ -36,10 +36,11 @@ class Main {
 
         if (len > 3) {
             copy[goalPos.position.y]!![goalPos.position.x] = 'o'
-            //for (i in 0 until len / 2 + 4) {
+            for (i in 1 until len / 2 + 4) {
             //    copy[i]!![len / 2 - 1] = 'X'
             //    copy[i]!![len / 2] = 'X'
-            //}
+                copy[i]!![len / 2] = 'E'
+            }
 
         }
         openSet.add(startingPos) // put the starting node on the open list
@@ -175,7 +176,7 @@ class Main {
         for (ca in grid) {
             val builder = StringBuilder()
             for (c in ca!!) {
-                builder.append(if (c == 'X') "X" else if (c == 'C') "C" else c.toString()).append(" ")
+                builder.append(c.toString()).append(" ")
             }
             println(builder.toString())
         }
