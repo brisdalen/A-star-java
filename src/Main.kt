@@ -36,6 +36,7 @@ class Main {
 
         if (len > 3) {
             copy[goalPos.position.y]!![goalPos.position.x] = 'o'
+            //for (i in 0 until len / 2 + 4) {
             for (i in 1 until len / 2 + 4) {
             //    copy[i]!![len / 2 - 1] = 'X'
             //    copy[i]!![len / 2] = 'X'
