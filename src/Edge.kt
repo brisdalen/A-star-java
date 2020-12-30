@@ -25,4 +25,20 @@ class Edge(val start: NavigationPoint, val end: NavigationPoint) {
     override fun toString(): String {
         return "start: $start end: $end f:$f - g:$g h:$h"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if(other !is Edge) {
+            return false
+        }
+        if((other as Edge).start == start && (other as Edge).end == end) {
+            return true
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        var result = start.hashCode()
+        result = 31 * result + end.hashCode()
+        return result
+    }
 }

@@ -29,10 +29,10 @@ class Main {
         val goalPos = NavigationPoint(len - 3, 2)
 //        startingPos.setG(0)
 //        startingPos.setH(diagonalDistance(startingPos, goalPos))
-        startingPos.f = 0
+//        startingPos.f = 0
 
-        val openSet = PriorityQueue(NavigationPointComparator()) // 1 Initialize the open list
-        val closedSet = HashSet<NavigationPoint>() // 2 Initialize the closed list
+        val openSet = PriorityQueue(EdgeComparator()) // 1 Initialize the open list
+        val closedSet = HashSet<Edge>() // 2 Initialize the closed list
 
         if (len > 3) {
             copy[goalPos.position.y]!![goalPos.position.x] = 'o'
@@ -42,31 +42,37 @@ class Main {
             //    copy[i]!![len / 2] = 'X'
                 copy[i]!![len / 2] = 'E'
             }
-
         }
-        openSet.add(startingPos) // put the starting node on the open list
+
+        val edges = getSurroundingEdges(startingPos, goalPos, copy)
+        openSet.addAll(edges) // put the starting node's edges on the open list
+        var first = true
+
         while (!openSet.isEmpty()) { // 3.  while the open list is not empty
             val q = openSet.poll() // a) find the node with the least f on the open list, call it "q". b) pop q off the open list
             println(q)
-            copy[q.position.y]!![q.position.x] = 'C'
+            copy[q.start.position.y]!![q.start.position.x] = 'C'
             display(copy)
-            if(q == goalPos) {
-                return returnPath(q, copy, startTime)
+            if(q.end == goalPos) {
+                return returnPath(q.end, copy, startTime)
             }
 
-            val neighbours = getSurroundingNodes(q, goalPos, copy) // c) generate q's 8 successors and set their parents to q
-            for(np in neighbours) { // d) for each successor
-                if(np == goalPos) { // i) if successor is the goal, stop search
-                    return returnPath(np, copy, startTime)
-                }
-//                println("" + np.position + " - " + np.f)
-                if(!openSet.contains(np)) {
-                    openSet.add(np)
+            if(!first) {
+                val neighbours = getSurroundingEdges(q.start, goalPos, copy) // c) generate q's 8 successors and set their parents to q
+                for(ne in neighbours) { // d) for each successor
+                    if(ne.end == goalPos) { // i) if successor is the goal, stop search
+                        return returnPath(ne.end, copy, startTime)
+                    }
+    //                println("" + ne.end.position + " - " + ne.f)
+                    if(!openSet.contains(ne)) {
+                        openSet.add(ne)
+                    }
                 }
             }
 
             closedSet.add(q) // e) push q on the closed list
-            copy[q.position.y]!![q.position.x] = 'ø'
+            copy[q.end.position.y]!![q.end.position.x] = 'ø'
+            first = false
         }
 
         return null
@@ -93,10 +99,21 @@ class Main {
             val point = Point(add(centre.position, p))
             if(isValid(point, input)) {
                 val toAdd = NavigationPoint(centre, point)
-                toAdd.setH(manhattenDistance(toAdd, goal)) // successor.h = distance from goal to successor
-//                toAdd.setH(diagonalDistance(toAdd, goal)) // successor.h = distance from goal to successor
                 toReturn.add(toAdd)
             }
+        }
+        return toReturn
+    }
+
+    private fun getSurroundingEdges(centre: NavigationPoint, goal: NavigationPoint, input: Array<CharArray?>): List<Edge> {
+        val toReturn = ArrayList<Edge>()
+        val points = getSurroundingNodes(centre, goal, input)
+        for(point in points) {
+            val edge = Edge(centre, point)
+            edge.setH(manhattenDistance(edge.start, goal)) // successor.h = distance from goal to successor
+            edge.setG(1)
+
+            toReturn.add(edge)
         }
         return toReturn
     }
@@ -182,8 +199,8 @@ class Main {
         }
     }
 
-    internal inner class NavigationPointComparator : Comparator<NavigationPoint> {
-        override fun compare(o1: NavigationPoint, o2: NavigationPoint): Int {
+    internal inner class EdgeComparator : Comparator<Edge> {
+        override fun compare(o1: Edge, o2: Edge): Int {
             return if (o1.f - o2.f < 0) -1 else if (o1.f == o2.f) 0 else 1
         }
     }
