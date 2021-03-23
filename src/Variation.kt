@@ -1,7 +1,16 @@
 enum class Variation {
+    O,
     F,
     N,
     S,
     W,
-    E
+    E,
+    ln,
+    rn,
+    ls,
+    rs,
+    uw,
+    dw,
+    ue,
+    de
 }
