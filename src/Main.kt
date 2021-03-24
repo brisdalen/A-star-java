@@ -47,8 +47,10 @@ class Main {
             }
         }
 
-        val edges = getSurroundingEdges(startingPos, copy) // Her er goalPos _ikke_ den riktige variabelen å bruke
-        openSet.addAll(edges) // put the starting node's edges on the open list
+        val edges = getSurroundingEdges(startingPos, copy)
+        startingPos.edges = edges.toTypedArray()
+        println(startingPos.edges)
+        openSet.addAll(startingPos.edges) // put the starting node's edges on the open list
         var first = true
 
         while(!openSet.isEmpty()) { // 3.  while the open list is not empty
@@ -60,16 +62,14 @@ class Main {
                 return returnPath(q.end, copy, startTime)
             }
 
-            if(!first) {
-                val neighbours = getSurroundingEdges(q.start, copy) // c) generate q's 8 successors and set their parents to q
-                for(ne in neighbours) { // d) for each successor
-                    if(ne.end == goalPos) { // i) if successor is the goal, stop search
-                        return returnPath(ne.end, copy, startTime)
-                    }
-                    //                println("" + ne.end.position + " - " + ne.f)
-                    if(!openSet.contains(ne)) {
-                        openSet.add(ne)
-                    }
+            val neighbours = getSurroundingEdges(q.end, copy) // c) generate q's 8 successors and set their parents to q
+            for(ne in neighbours) { // d) for each successor
+                if(ne.end == goalPos) { // i) if successor is the goal, stop search
+                    return returnPath(ne.end, copy, startTime)
+                }
+                //                println("" + ne.end.position + " - " + ne.f)
+                if(!openSet.contains(ne)) {
+                    openSet.add(ne)
                 }
             }
 
