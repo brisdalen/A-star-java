@@ -19,6 +19,8 @@ class Main {
     We really don’t know the actual distance until we find the path, because all sorts of things can be in the
     way (walls, water, etc.).
      */
+    val gCostHandler: GCostHandler = GCostHandler()
+
     private fun pathAStar(input: Array<CharArray>): ArrayList<NavigationPoint>? {
         val startTime = System.currentTimeMillis()
         val copy = arrayOfNulls<CharArray>(input.size)
@@ -128,130 +130,28 @@ class Main {
 
         return when(direction) {
             Direction.NORTHWEST -> {
-                handleNorthWest(originVariation, goalVariation)
+                gCostHandler.handleNorthWest(originVariation, goalVariation)
             }
             Direction.NORTH -> {
-                handleNorth(originVariation, goalVariation)
+                gCostHandler.handleNorth(originVariation, goalVariation)
             }
             Direction.NORTHEAST -> {
-                handleNorthEast(originVariation, goalVariation)
+                gCostHandler.handleNorthEast(originVariation, goalVariation)
             }
             Direction.WEST -> {
-                handleWest(originVariation, goalVariation)
+                gCostHandler.handleWest(originVariation, goalVariation)
             }
             Direction.EAST -> {
-                handleEast(originVariation, goalVariation)
+                gCostHandler.handleEast(originVariation, goalVariation)
             }
             Direction.SOUTHWEST -> {
-                handleSouthWest(originVariation, goalVariation)
+                gCostHandler.handleSouthWest(originVariation, goalVariation)
             }
             Direction.SOUTH -> {
-                handleSouth(originVariation, goalVariation)
+                gCostHandler.handleSouth(originVariation, goalVariation)
             }
-            else -> handleSouthEast(originVariation, goalVariation)
+            else -> gCostHandler.handleSouthEast(originVariation, goalVariation)
         }
-    }
-
-    private fun handleNorthWest(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsNW(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleNorth(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsN(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleNorthEast(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsNE(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleWest(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsW(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleEast(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsE(originVariation.name, goalVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleSouthWest(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsSW(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleSouth(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsS(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun handleSouthEast(originVariation: Variation, goalVariation: Variation): Int {
-        if(checkContainsSE(goalVariation.name, originVariation.name)) {
-            return 999
-        }
-        return 1
-    }
-
-    private fun checkContainsNW(goal: String, origin: String): Boolean {
-        return goal.contains(Variation.S.name)
-                || goal.contains(Variation.E.name)
-                || goal.contains(Variation.rs.name)
-                || goal.contains(Variation.de.name)
-                || origin.contains(Variation.N.name)
-                || origin.contains(Variation.W.name)
-                || origin.contains(Variation.ln.name)
-                || origin.contains(Variation.uw.name)
-    }
-
-    // N
-    // NE
-
-    private fun checkContainsW(goal: String, origin: String): Boolean {
-        return goal.contains(Variation.E.name)
-                || goal.contains(Variation.ue.name)
-                || goal.contains(Variation.de.name)
-                || origin.contains(Variation.W.name)
-                || origin.contains(Variation.uw.name)
-                || origin.contains(Variation.dw.name)
-    }
-
-    private fun checkContainsE(goal: String, origin: String): Boolean {
-        return goal.contains(Variation.W.name)
-                || goal.contains(Variation.uw.name)
-                || goal.contains(Variation.dw.name)
-                || origin.contains(Variation.E.name)
-                || origin.contains(Variation.ue.name)
-                || origin.contains(Variation.de.name)
-    }
-
-    // SW
-    // S
-
-    private fun checkContainsSE(goal: String, origin: String): Boolean {
-        return goal.contains(Variation.N.name)
-                || goal.contains(Variation.W.name)
-                || goal.contains(Variation.ln.name)
-                || goal.contains(Variation.uw.name)
-                || origin.contains(Variation.S.name)
-                || origin.contains(Variation.E.name)
-                || origin.contains(Variation.rs.name)
-                || origin.contains(Variation.de.name)
     }
 
     private fun isValid(check: Point, input: Array<CharArray?>): Boolean {
