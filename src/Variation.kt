@@ -1,3 +1,5 @@
+@file:Suppress("EnumEntryName")
+
 enum class Variation {
     O,
     F,

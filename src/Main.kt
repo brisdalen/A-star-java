@@ -19,7 +19,7 @@ class Main {
     We really don’t know the actual distance until we find the path, because all sorts of things can be in the
     way (walls, water, etc.).
      */
-    val gCostHandler: GCostHandler = GCostHandler()
+    private val gCostHandler: GCostHandler = GCostHandler()
 
     private fun pathAStar(input: Array<CharArray>): ArrayList<NavigationPoint>? {
         val startTime = System.currentTimeMillis()
@@ -47,11 +47,10 @@ class Main {
             }
         }
 
-        val edges = getSurroundingEdges(startingPos, copy)
+        val edges = getSurroundingEdges(startingPos, goalPos, copy)
         startingPos.edges = edges.toTypedArray()
         println(startingPos.edges)
         openSet.addAll(startingPos.edges) // put the starting node's edges on the open list
-        var first = true
 
         while(!openSet.isEmpty()) { // 3.  while the open list is not empty
             val q = openSet.poll() // a) find the node with the least f on the open list, call it "q". b) pop q off the open list
@@ -62,7 +61,7 @@ class Main {
                 return returnPath(q.end, copy, startTime)
             }
 
-            val neighbours = getSurroundingEdges(q.end, copy) // c) generate q's 8 successors and set their parents to q
+            val neighbours = getSurroundingEdges(q.end, goalPos, copy) // c) generate q's 8 successors and set their parents to q
             for(ne in neighbours) { // d) for each successor
                 if(ne.end == goalPos) { // i) if successor is the goal, stop search
                     return returnPath(ne.end, copy, startTime)
@@ -75,7 +74,6 @@ class Main {
 
             closedSet.add(q) // e) push q on the closed list
             copy[q.end.position.y]!![q.end.position.x] = 'ø'
-            first = false
         }
 
         return null
@@ -108,12 +106,12 @@ class Main {
         return toReturn
     }
 
-    private fun getSurroundingEdges(centre: NavigationPoint, input: Array<CharArray?>): List<Edge> {
+    private fun getSurroundingEdges(centre: NavigationPoint, finalGoal: NavigationPoint, input: Array<CharArray?>): List<Edge> {
         val toReturn = ArrayList<Edge>()
         val points = getSurroundingNodes(centre, input)
         for(point in points) {
             val edge = Edge(centre, point)
-            edge.setH(manhattenDistance(edge.start, point)) // successor.h = distance from goal to successor
+            edge.setH(manhattenDistance(edge.start, finalGoal)) // successor.h = distance from goal to successor
             edge.setG(calculateG(centre, direction(centre, point), point)) // Funker som det skal
 
             toReturn.add(edge)
@@ -122,8 +120,7 @@ class Main {
     }
 
     private fun calculateG(originVariation: NavigationPoint, direction: Direction, goalVariation: NavigationPoint): Int {
-        val g = calculateG(originVariation.variation, direction, goalVariation.variation)
-        return g
+        return calculateG(originVariation.variation, direction, goalVariation.variation)
     }
 
     private fun calculateG(originVariation: Variation, direction: Direction, goalVariation: Variation): Int {
@@ -185,7 +182,7 @@ class Main {
 
     private fun direction(origin: Point, lookingAt: Point): Direction {
         if(origin == lookingAt) {
-            throw Exception("Can't call this method from the same Point that you're looking at.");
+            throw Exception("Can't call this method from the same Point that you're looking at.")
         }
         // Top
         if(origin.y > lookingAt.y) {
