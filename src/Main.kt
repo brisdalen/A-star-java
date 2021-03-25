@@ -100,6 +100,9 @@ class Main {
             val point = Point(add(centre.position, p))
             if(isValid(point, input)) {
                 val toAdd = NavigationPoint(centre, point)
+                if(input[point.y]!![point.x] == 'E') {
+                    toAdd.variation = Variation.E;
+                }
                 toReturn.add(toAdd)
             }
         }
@@ -120,7 +123,10 @@ class Main {
     }
 
     private fun calculateG(originVariation: NavigationPoint, direction: Direction, goalVariation: NavigationPoint): Int {
-        return calculateG(originVariation.variation, direction, goalVariation.variation)
+        val g = calculateG(originVariation.variation, direction, goalVariation.variation)
+        println("${originVariation.variation.name}:${direction.name}:${goalVariation.variation.name}")
+        println(g)
+        return g
     }
 
     private fun calculateG(originVariation: Variation, direction: Direction, goalVariation: Variation): Int {

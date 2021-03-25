@@ -3,7 +3,7 @@ import java.awt.Point
 class NavigationPoint(parent: NavigationPoint?, x: Int, y: Int, v: Variation) {
     val parent = parent
     val position: Point = Point(x, y)
-    val variation = v
+    var variation = v
     var edges = arrayOfNulls<Edge>(8)
 
     constructor(x: Int, y: Int) : this(null, x, y, Variation.O)
