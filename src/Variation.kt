@@ -2,7 +2,7 @@
 
 enum class Variation {
     O,
-    F,
+    X, // Full
     N,
     S,
     W,

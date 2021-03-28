@@ -21,29 +21,26 @@ class Main {
      */
     private val gCostHandler: GCostHandler = GCostHandler()
 
-    private fun pathAStar(input: Array<CharArray>): ArrayList<NavigationPoint>? {
+    private fun pathAStar(input: Array<Array<NavigationPoint?>>): ArrayList<NavigationPoint>? {
         val startTime = System.currentTimeMillis()
-        val copy = arrayOfNulls<CharArray>(input.size)
+//        val copy = arrayOfNulls<CharArray>(input.size)
+        val copy = input.copyOf();
         for(i in input.indices) {
             copy[i] = input[i].clone()
         }
         val len = input.size
         val startingPos = NavigationPoint(2, 2)
         val goalPos = NavigationPoint(len - 3, 2)
-//        startingPos.setG(0)
-//        startingPos.setH(diagonalDistance(startingPos, goalPos))
-//        startingPos.f = 0
 
         val openSet = PriorityQueue(EdgeComparator()) // 1 Initialize the open list
         val closedSet = HashSet<Edge>() // 2 Initialize the closed list
 
         if(len > 3) {
-            copy[goalPos.position.y]!![goalPos.position.x] = 'o'
             //for (i in 0 until len / 2 + 4) {
             for(i in 1 until len / 2 + 4) {
                 //    copy[i]!![len / 2 - 1] = 'X'
                 //    copy[i]!![len / 2] = 'X'
-                copy[i]!![len / 2] = 'E'
+                copy[i][len / 2]!!.variation = Variation.E
             }
         }
 
@@ -55,8 +52,7 @@ class Main {
         while(!openSet.isEmpty()) { // 3.  while the open list is not empty
             val q = openSet.poll() // a) find the node with the least f on the open list, call it "q". b) pop q off the open list
             println(q)
-            copy[q.start.position.y]!![q.start.position.x] = 'C'
-            display(copy)
+            display(copy, q.start, goalPos)
             if(q.end == goalPos) {
                 return returnPath(q.end, copy, startTime)
             }
@@ -73,19 +69,15 @@ class Main {
             }
 
             closedSet.add(q) // e) push q on the closed list
-            copy[q.end.position.y]!![q.end.position.x] = 'ø'
+//            copy[q.end.position.y]!![q.end.position.x] = 'ø'
         }
 
         return null
     }
 
-    private fun returnPath(np: NavigationPoint, copy: Array<CharArray?>, startTime: Long): ArrayList<NavigationPoint> {
+    private fun returnPath(np: NavigationPoint, copy: Array<Array<NavigationPoint?>>, startTime: Long): ArrayList<NavigationPoint> {
         println("path to goal found: $np")
         val path = pathFromNavigationPoint(np)
-        for(point in path) {
-            copy[point.position.y]!![point.position.x] = '0'
-        }
-        display(copy)
         println("Execution time: ${System.currentTimeMillis() - startTime}")
         return path
     }
@@ -94,22 +86,19 @@ class Main {
         return Point(p1.x + p2.x, p1.y + p2.y)
     }
 
-    private fun getSurroundingNodes(centre: NavigationPoint, input: Array<CharArray?>): List<NavigationPoint> {
+    private fun getSurroundingNodes(centre: NavigationPoint, input: Array<Array<NavigationPoint?>>): List<NavigationPoint> {
         val toReturn = ArrayList<NavigationPoint>()
         for(p in surrounding) {
             val point = Point(add(centre.position, p))
             if(isValid(point, input)) {
-                val toAdd = NavigationPoint(centre, point)
-                if(input[point.y]!![point.x] == 'E') {
-                    toAdd.variation = Variation.E;
-                }
+                val toAdd = NavigationPoint(centre, point, input[point.x][point.y]!!.variation)
                 toReturn.add(toAdd)
             }
         }
         return toReturn
     }
 
-    private fun getSurroundingEdges(centre: NavigationPoint, finalGoal: NavigationPoint, input: Array<CharArray?>): List<Edge> {
+    private fun getSurroundingEdges(centre: NavigationPoint, finalGoal: NavigationPoint, input: Array<Array<NavigationPoint?>>): List<Edge> {
         val toReturn = ArrayList<Edge>()
         val points = getSurroundingNodes(centre, input)
         for(point in points) {
@@ -157,10 +146,10 @@ class Main {
         }
     }
 
-    private fun isValid(check: Point, input: Array<CharArray?>): Boolean {
+    private fun isValid(check: Point, input: Array<Array<NavigationPoint?>>): Boolean {
         return check.x >= 0 && check.x < input.size
                 && check.y >= 0 && check.y < input.size
-                && input[check.y]!![check.x] != 'X'
+                && input[check.y][check.x]!!.variation != Variation.X
     }
 
     private fun diagonalDistance(current: NavigationPoint, goal: NavigationPoint): Int {
@@ -234,11 +223,40 @@ class Main {
         }
     }
 
-    private fun display(grid: Array<CharArray?>) {
-        for(ca in grid) {
+    private fun display(grid: Array<Array<NavigationPoint?>>) {
+        for(npa in grid) {
             val builder = StringBuilder()
-            for(c in ca!!) {
-                builder.append(c.toString()).append(" ")
+            for(np in npa) {
+                if(np!!.variation == Variation.O) {
+                    builder.append(".")
+                } else {
+                    builder.append(np.variation.name)
+                }
+                builder.append(" ")
+            }
+            println(builder.toString())
+        }
+    }
+
+    private fun display(grid: Array<Array<NavigationPoint?>>, playerPos: NavigationPoint, goalPos: NavigationPoint) {
+        for(npa in grid) {
+            val builder = StringBuilder()
+            for(np in npa) {
+                when {
+                    np!!.position == goalPos.position -> {
+                        builder.append("o")
+                    }
+                    np.position == playerPos.position -> {
+                        builder.append("C")
+                    }
+                    np.variation == Variation.O -> {
+                        builder.append(".")
+                    }
+                    else -> {
+                        builder.append(np.variation.name)
+                    }
+                }
+                builder.append(" ")
             }
             println(builder.toString())
         }
@@ -272,17 +290,22 @@ class Main {
 
     init {
         val size = 16
-        val grid = Array(size) { CharArray(size) }
-        for(ca in grid) {
-            Arrays.fill(ca, '.')
+        val grid = Array(size) { arrayOfNulls<NavigationPoint>(size) }
+        for((i, outerArray) in grid.withIndex()) {
+            for(j in outerArray.indices) {
+                grid[i][j] = NavigationPoint(i, j)
+            }
         }
         for(i in grid.indices) {
-            grid[i][0] = 'X' // 'X' = obstacle
-            grid[i][grid.size - 1] = 'X'
-            grid[0][i] = 'X'
-            grid[grid.size - 1][i] = 'X'
+            grid[i][0]!!.variation = Variation.X // 'X' = obstacle
+            grid[i][grid.size - 1]!!.variation = Variation.X
+            grid[0][i]!!.variation = Variation.X
+            grid[grid.size - 1][i]!!.variation = Variation.X
         }
+
+        display(grid)
         val path = pathAStar(grid)
+        /*
         println("path size: ${path?.size}")
         path?.reverse()
         if(path != null) {
@@ -291,5 +314,6 @@ class Main {
                 println("${step++}:[${p.position.x}:${p.position.y}]")
             }
         }
+        */
     }
 }
